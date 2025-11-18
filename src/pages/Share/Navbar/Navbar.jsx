@@ -55,18 +55,18 @@ const Navbar = () => {
             {link}
           </ul>
         </div>
-        <a className=" text-xl">
+        <Link to="/" className=" text-xl">
           <Logo />
-        </a>
+        </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 text-primary">{link}</ul>
       </div>
       <div className="navbar-end">
         {user ? (
-          <a onClick={handleLogOut} className="btn">
+          <button onClick={handleLogOut} className="btn">
             Log Out
-          </a>
+          </button>
         ) : (
           <Link className="btn" to="/login">
             Login
@@ -74,7 +74,7 @@ const Navbar = () => {
         )}
 
         <Link
-          to="/"
+          to="/rider"
           className="relative inline-flex items-center justify-center px-8 py-2.5 hover:text-white hover:border overflow-hidden tracking-tighter bg-primary text-secondary rounded-lg group ml-3"
         >
           <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-secondary  rounded-full group-hover:w-56 group-hover:h-56"></span>

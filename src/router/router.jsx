@@ -5,13 +5,26 @@ import Covarage from "../pages/Covarage/Covarage";
 import AuthLayout from "../Layouts/AuthLayout";
 import Login from "../pages/Auth/Login/Login";
 import Register from "../pages/Auth/Register/Register";
+import Rider from "../pages/Rider/Rider";
+import PrivateRoutes from "./PrivateRoutes";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayouts />,
+    hydrateFallbackElement: (
+      <span className="loading loading-spinner loading-xl"></span>
+    ),
     children: [
       { index: true, element: <Home /> },
+      {
+        path: "/rider",
+        element: (
+          <PrivateRoutes>
+            <Rider />,
+          </PrivateRoutes>
+        ),
+      },
       {
         path: "/coverage",
         element: <Covarage />,

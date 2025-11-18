@@ -1,9 +1,10 @@
 import React from "react";
 import useAuth from "../hooks/useAuth";
-import { Navigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 
 const PrivateRoutes = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -12,7 +13,7 @@ const PrivateRoutes = ({ children }) => {
     );
   }
   if (!user) {
-    return <Navigate to="/login" state></Navigate>;
+    return <Navigate to="/login" state={location.pathname}></Navigate>;
   }
   return children;
 };

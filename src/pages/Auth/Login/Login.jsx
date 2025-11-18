@@ -1,11 +1,14 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import useAuth from "../../../hooks/useAuth";
-import { Link, Navigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import SocialLogin from "../SocialLogin/SocialLogin";
 import RootLayouts from "../../../Layouts/RootLayouts";
 const Login = () => {
   const { singInUser, user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -16,6 +19,7 @@ const Login = () => {
     singInUser(data.email, data.password)
       .then((result) => {
         console.log(result.user);
+        navigate(location?.state || "/");
       })
       .catch((error) => {
         console.log(error);
@@ -94,6 +98,7 @@ const Login = () => {
           New to Zap Shift{" "}
           <Link
             to="/register"
+            state={location.state}
             className="text-secondary underline font-bold cursor-pointer"
           >
             Register
