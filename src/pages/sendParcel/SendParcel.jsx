@@ -1,15 +1,66 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-
+import { useForm, useWatch } from "react-hook-form";
+import { useLoaderData } from "react-router";
+import Swal from "sweetalert2";
 const SendParcel = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm();
+  const serviceCenters = useLoaderData();
+
+  const regionsDuplicate = serviceCenters.map((r) => r.region);
+  const regions = [...new Set(regionsDuplicate)];
+  const senderRegions = useWatch({ control, name: "senderRegion" });
+  const receiverRegion = useWatch({ control, name: "receiverRegion" });
+
+  const districtsByRegions = (region) => {
+    const regionDistricts = serviceCenters.filter((c) => c.region === region);
+    const districts = regionDistricts.map((d) => d.district);
+    return districts;
+  };
 
   const handleSendParcel = (data) => {
     console.log(data);
+    const isDocument = data.parcelType === "document";
+    const samedistrict = data.receiverDistrict === data.senderDistrict;
+    const parcelWeight = parseInt(data.parcelWeight);
+    let cost = 0;
+    if (isDocument) {
+      cost = samedistrict ? 60 : 80;
+    } else {
+      if (parcelWeight < 3) {
+        cost = samedistrict ? 110 : 150;
+      } else {
+        const minCharge = samedistrict ? 110 : 150;
+        const extraWeight = parcelWeight - 3;
+        const extraCharge = samedistrict
+          ? extraWeight * 40
+          : extraWeight * 40 + 40;
+        cost = minCharge + extraCharge;
+      }
+    }
+
+    console.log(cost);
+    Swal.fire({
+      title: "Agree with the cost?",
+      text: `You will be charged! ${cost}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "I agree!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Swal.fire({
+        //   title: "Deleted!",
+        //   text: "Your file has been deleted.",
+        //   icon: "success",
+        // });
+      }
+    });
   };
   return (
     <div>
@@ -85,19 +136,35 @@ const SendParcel = () => {
               {/* sender region */}
               <fieldset className="fieldset">
                 <legend className="fieldset-legend">Sender Region</legend>
-                <select defaultValue="Pick a Region" className="select">
+                <select
+                  {...register("senderRegion")}
+                  defaultValue="Pick a Region"
+                  className="select"
+                >
                   <option disabled={true}>Pick a Region</option>
-                  <option>Chrome</option>
-                  <option>FireFox</option>
-                  <option>Safari</option>
+                  {regions.map((r, index) => (
+                    <option key={index} value={r}>
+                      {r}
+                    </option>
+                  ))}
                 </select>
-                <span className="label">Optional</span>
               </fieldset>
-              {/* your distric  */}
-              <select defaultValue="Pick a color" className="select">
-                <option disabled={true}>Pick a color</option>
-                <option>Crimson</option>
-              </select>
+              {/* sender districts */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Sender Districts</legend>
+                <select
+                  {...register("senderDistrict")}
+                  defaultValue="Pick a Districts"
+                  className="select"
+                >
+                  <option disabled={true}>Pick a Districts</option>
+                  {districtsByRegions(senderRegions)?.map((r, index) => (
+                    <option key={index} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </fieldset>
               {/* sender address  */}
               <label className="label mt-4">Sender Address</label>
               <input
@@ -114,7 +181,6 @@ const SendParcel = () => {
                 className="input w-full rounded-full focus:outline-0 input-primary  hover:ring-2 hover:ring-primary"
                 placeholder="Sender Phone no"
               />
-
               {/* sender instruction  */}
               <label className="label">Sender Instruction</label>
               <textarea
@@ -144,6 +210,38 @@ const SendParcel = () => {
                 className="input w-full rounded-full focus:outline-0  hover:ring-2 hover:ring-primary input-primary"
                 placeholder="Receiver Email"
               />
+              {/* receiver region */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Receiver Region</legend>
+                <select
+                  {...register("receiverRegion")}
+                  defaultValue="Pick a Region"
+                  className="select"
+                >
+                  <option disabled={true}>Pick a Region</option>
+                  {regions.map((r, index) => (
+                    <option key={index} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </fieldset>
+              {/* receiver district */}
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend">Receiver District</legend>
+                <select
+                  {...register("receiverDistrict")}
+                  defaultValue="Pick a district"
+                  className="select"
+                >
+                  <option disabled={true}>Pick a District</option>
+                  {districtsByRegions(receiverRegion)?.map((d, index) => (
+                    <option key={index} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </fieldset>
               {/* receiver address  */}
               <label className="label mt-4">Receiver Address</label>
               <input
@@ -160,11 +258,7 @@ const SendParcel = () => {
                 className="input w-full rounded-full focus:outline-0 input-primary  hover:ring-2 hover:ring-primary"
                 placeholder="Receiver Phone no"
               />
-              {/* your distric  */}
-              <select defaultValue="Pick a color" className="select">
-                <option disabled={true}>Pick a color</option>
-                <option>receiver</option>
-              </select>
+
               {/* receiver instruction  */}
               <label className="label">Receiver Instruction</label>
               <textarea
@@ -175,11 +269,13 @@ const SendParcel = () => {
             </fieldset>
           </div>
         </div>
-        <input
-          type="submit"
-          className="btn btn-primary my-3 text-secondary"
-          value="Submit"
-        />
+        <div className="text-center mt-5">
+          <input
+            type="submit"
+            className="btn btn-primary my-3 w-1/2 text-secondary"
+            value="Submit"
+          />
+        </div>
       </form>
     </div>
   );
